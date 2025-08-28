@@ -42,19 +42,24 @@ export default function Home() {
     setError(null);
     setSummary('');
     try {
-      const response = await fetch('http://127.0.0.1:8000/summarize', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+      const response = await fetch(`${apiUrl}/summarize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text }),
-      });
+      })
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || `エラーが発生しました: ${response.statusText}`);
       }
       const data = await response.json();
       setSummary(data.summary);
-    } catch (e: any) {
-      setError(e.message || '要約の取得中に不明なエラーが発生しました。');
+    } catch (e: unknown) {
+      let errorMessage = '要約の取得中に不明なエラーが発生しました。';
+      if (e instanceof Error) {
+        errorMessage = e.message;
+      }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -110,7 +115,7 @@ export default function Home() {
               {isLoading ? (
                 <><LoadingSpinner /> <span className="ml-2">Processing...</span></>
               ) : (
-                <><MagicWandIcon className="h-5 w-5 mr-2" /> 'Summarize'</>
+                <><MagicWandIcon className="h-5 w-5 mr-2" /> Summarize</>
               )}
             </button>
           </div>
